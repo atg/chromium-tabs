@@ -20,10 +20,10 @@
 
 @interface GTMWSCSheetInfo : NSObject {
  @public
-  __weak NSWindow* overlayWindow_;
+  /* bug! __weak */ NSWindow* overlayWindow_;
 
   // delegate data
-  __weak id modalDelegate_;
+  /* bug! __weak */ id modalDelegate_;
   SEL didEndSelector_;
   void* contextInfo_;
 

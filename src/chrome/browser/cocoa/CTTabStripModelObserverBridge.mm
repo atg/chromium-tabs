@@ -28,8 +28,8 @@ CTTabStripModelObserverBridge::CTTabStripModelObserverBridge(CTTabStripModel* mo
 
 CTTabStripModelObserverBridge::~CTTabStripModelObserverBridge() {
   // Remove ourselves from receiving notifications.
-  assert(model_ != NULL);
-  model_->RemoveObserver(this);
+  if (model_)
+    model_->RemoveObserver(this);
 }
 
 

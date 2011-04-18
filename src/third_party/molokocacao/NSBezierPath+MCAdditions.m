@@ -81,7 +81,8 @@ static void CGPathCallback(void *info, const CGPathElement *element)
   NSBezierPath *strokedPath = [NSBezierPath bezierPathWithCGPath:strokedPathRef];
   
   CGContextRestoreGState(context);
-
+  
+  CFRelease(pathRef);
   CFRelease(strokedPathRef);
   
   return strokedPath;

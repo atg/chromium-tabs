@@ -3,3 +3,9 @@
 /chromium/.gclient_entries
 /chromium/README-archive
 /chromium/src/
+
+.DS_Store
+chromium-tabs.xcodeproj/alexgordon.pbxuser
+chromium-tabs.xcodeproj/alexgordon.perspectivev3
+chromium-tabs.xcodeproj/project.xcworkspace/
+chromium-tabs.xcodeproj/xcuserdata/

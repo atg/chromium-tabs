@@ -95,7 +95,7 @@ static CTBrowserWindowController* _currentMain = nil; // weak
   browser_->windowController_ = self;
 
   // Observe tabs
-  tabStripObserver_ =
+  tabStripObserver_ = 
       new CTTabStripModelObserverBridge([browser_ tabStripModel], self);
 
   // Note: the below statement including [self window] implicitly loads the
@@ -133,7 +133,8 @@ static CTBrowserWindowController* _currentMain = nil; // weak
 
   initializing_ = NO;
   if (!_currentMain) {
-    ct_casid(&_currentMain, self);
+    // TODO: synchronization
+    _currentMain = self;
   }
   return self;
 }
@@ -156,10 +157,11 @@ static CTBrowserWindowController* _currentMain = nil; // weak
 -(void)dealloc {
   DLOG("[ChromiumTabs] dealloc window controller");
   if (_currentMain == self) {
-    ct_casid(&_currentMain, nil);
+    // TODO: synchronization
+    _currentMain = nil;
   }
   delete tabStripObserver_;
-
+  
   // Close all tabs
   //[browser_ closeAllTabs]; // TODO
 
@@ -173,14 +175,15 @@ static CTBrowserWindowController* _currentMain = nil; // weak
 
   [browser_ release];
   [tabStripController_ release];
-  ct_casid(&toolbarController_, nil);
+  [toolbarController_ release];
   [super dealloc];
 }
 
 
 -(void)finalize {
   if (_currentMain == self) {
-    ct_casid(&_currentMain, nil);
+    // TODO: synchronization
+    _currentMain = nil;
   }
   //NSLog(@"%@ will finalize (retainCount: %u)", self, [self retainCount]);
   //NSLog(@"%@", [NSThread callStackSymbols]);
@@ -418,7 +421,7 @@ static CTBrowserWindowController* _currentMain = nil; // weak
   NSScreen* screen = [sourceWindow screen];
   windowRect.origin.y =
       [screen frame].size.height - windowRect.size.height - windowRect.origin.y;
-
+  
   //gfx::Rect browserRect(windowRect.origin.x, windowRect.origin.y,
   //                      windowRect.size.width, windowRect.size.height);
 
@@ -446,7 +449,7 @@ static CTBrowserWindowController* _currentMain = nil; // weak
   // Create a new window controller with the browser.
   CTBrowserWindowController* controller =
       [[[self class] alloc] initWithBrowser:newBrowser];
-
+  
   // Add the tab to the browser (we do it here after creating the window
   // controller so that notifications are properly delegated)
   newBrowser.tabStripModel->AppendTabContents(contents, true);
@@ -769,9 +772,8 @@ static CTBrowserWindowController* _currentMain = nil; // weak
     // tab strip is empty we'll be called back again.
     [[self window] orderOut:self];
     [browser_ windowDidBeginToClose];
-    if (_currentMain == self) {
-      ct_casid(&_currentMain, nil);
-    }
+    if (_currentMain == self)
+      _currentMain = nil;
     return NO;
   }
 
@@ -790,7 +792,8 @@ static CTBrowserWindowController* _currentMain = nil; // weak
   // NOTE: if you use custom window bounds saving/restoring, you should probably
   //       save the window bounds here.
 
-  ct_casid(&_currentMain, self);
+  assert([NSThread isMainThread]); // since we don't lock
+  _currentMain = self;
 
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
   // about the active window state should be registering for notifications.
@@ -803,7 +806,8 @@ static CTBrowserWindowController* _currentMain = nil; // weak
 
 - (void)windowDidResignMain:(NSNotification*)notification {
   if (_currentMain == self) {
-    ct_casid(&_currentMain, nil);
+    assert([NSThread isMainThread]); // since we don't lock
+    _currentMain = nil;
   }
 
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
@@ -979,8 +983,6 @@ static CTBrowserWindowController* _currentMain = nil; // weak
 - (void)tabClosingWithContents:(CTTabContents*)contents
                        atIndex:(NSInteger)index {
   [contents tabWillCloseInBrowser:browser_ atIndex:index];
-  if (contents.isSelected)
-    [self updateToolbarWithContents:nil shouldRestoreState:NO];
 }
 
 
@@ -1007,8 +1009,6 @@ static CTBrowserWindowController* _currentMain = nil; // weak
 - (void)tabDetachedWithContents:(CTTabContents*)contents
                         atIndex:(NSInteger)index {
   [contents tabDidDetachFromBrowser:browser_ atIndex:index];
-  if (contents.isSelected)
-    [self updateToolbarWithContents:nil shouldRestoreState:NO];
 }
 
 /*
