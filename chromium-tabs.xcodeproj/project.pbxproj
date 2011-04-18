@@ -867,7 +867,7 @@
 				HEADER_SEARCH_PATHS = src;
 				INFOPLIST_FILE = "resources/ChromiumTabs-Info.plist";
 				INSTALL_PATH = "@rpath";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = ChromiumTabs;
 			};
 			name = Debug;
@@ -901,7 +901,7 @@
 				HEADER_SEARCH_PATHS = src;
 				INFOPLIST_FILE = "resources/ChromiumTabs-Info.plist";
 				INSTALL_PATH = "@rpath";
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
